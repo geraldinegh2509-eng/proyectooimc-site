@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Datos - proyectoimc</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;line-height:1.4;margin:20px}
+    h1{margin-bottom:0.2em}
+    .actions{margin:12px 0}
+    table{border-collapse:collapse;width:100%;max-width:900px}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f4f4f4}
+    .container{max-width:960px}
+    pre{background:#f7f7f7;padding:10px;overflow:auto}
+    button{padding:8px 12px;border-radius:6px;border:1px solid #bbb;background:#fff;cursor:pointer}
+    @media (max-width:600px){table,thead,tbody,tr,th,td{display:block}th{position:sticky;top:0}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Listado público — proyectoimc</h1>
+    <p>Esta página muestra los datos importados desde el volcado SQL <code>rpd_academia.sql</code>. Puedes compartir la URL de GitHub Pages para que sea visible públicamente.</p>
+
+    <div class="actions">
+      <button id="downloadSql">Descargar rpd_academia.sql</button>
+      <button id="copyUrl">Copiar URL de ejemplo</button>
+    </div>
+
+    <table id="peopleTable" aria-describedby="tabla">
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>nombre</th>
+          <th>edad</th>
+          <th>peso</th>
+          <th>altura</th>
+          <th>imc</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>SQL (extracto del volcado)</h2>
+    <pre id="sqlPreview" aria-hidden="false"></pre>
+  </div>
+
+  <script>
+    // Datos extraídos del INSERT de tu archivo SQL
+    const people = [
+      {id:7, nombre:"cristian", edad:19, peso:58, altura:1.7, imc:20.0692},
+      {id:8, nombre:"Karenn", edad:18, peso:54, altura:1.52, imc:23.3726},
+      {id:16, nombre:"luis", edad:19, peso:65, altura:1.6, imc:25.3906},
+      {id:19, nombre:"bnm", edad:45, peso:32, altura:1.57, imc:12.9823},
+      {id:20, nombre:"youuu", edad:24, peso:34, altura:1.65, imc:12.4885},
+      {id:21, nombre:"qwert", edad:45, peso:34, altura:1.87, imc:9.7229},
+      {id:22, nombre:"sd", edad:34, peso:45, altura:1.78, imc:14.2028},
+      {id:23, nombre:"sd", edad:34, peso:45, altura:1.78, imc:14.2028}
+    ];
+
+    // Contenido completo del SQL (para descarga / ver)
+    const sqlContent = `-- phpMyAdmin SQL Dump
+-- version 4.5.1
+-- http://www.phpmyadmin.net
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 15-01-2026 a las 03:36:32
+-- Versión del servidor: 10.1.9-MariaDB
+-- Versión de PHP: 5.6.15
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: ` + "`proyectoimc`" + `
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla ` + "`personas`" + `
+--
+
+CREATE TABLE ` + "`personas`" + ` (
+  ` + "`id`" + ` int(11) NOT NULL,
+  ` + "`nombre`" + ` varchar(50) DEFAULT NULL,
+  ` + "`edad`" + ` int(11) DEFAULT NULL,
+  ` + "`peso`" + ` float DEFAULT NULL,
+  ` + "`altura`" + ` float DEFAULT NULL,
+  ` + "`imc`" + ` float DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Volcado de datos para la tabla ` + "`personas`" + `
+--
+
+INSERT INTO ` + "`personas`" + ` (` + "`id`, `nombre`, `edad`, `peso`, `altura`, `imc`" + `) VALUES
+(7, 'cristian', 19, 58, 1.7, 20.0692),
+(8, 'Karenn', 18, 54, 1.52, 23.3726),
+(16, 'luis', 19, 65, 1.6, 25.3906),
+(19, 'bnm', 45, 32, 1.57, 12.9823),
+(20, 'youuu', 24, 34, 1.65, 12.4885),
+(21, 'qwert', 45, 34, 1.87, 9.7229),
+(22, 'sd', 34, 45, 1.78, 14.2028),
+(23, 'sd', 34, 45, 1.78, 14.2028);
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla ` + "`personas`" + `
+--
+ALTER TABLE ` + "`personas`" + `
+  ADD PRIMARY KEY (` + "`id`" + `);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla ` + "`personas`" + `
+--
+ALTER TABLE ` + "`personas`" + `
+  MODIFY ` + "`id`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;`;
+
+    // Rellenar tabla HTML
+    const tbody = document.querySelector('#peopleTable tbody');
+    people.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.id}</td><td>${escapeHtml(p.nombre)}</td><td>${p.edad}</td><td>${p.peso}</td><td>${p.altura}</td><td>${p.imc}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    // Mostrar SQL en la página
+    document.getElementById('sqlPreview').textContent = sqlContent;
+
+    document.getElementById('downloadSql').addEventListener('click', () => {
+      const blob = new Blob([sqlContent], {type: 'text/sql;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'rpd_academia.sql';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('copyUrl').addEventListener('click', () => {
+      const example = window.location.origin + '/' + (window.location.pathname.split('/')[1] || '') ;
+      navigator.clipboard?.writeText(example).then(()=>alert('URL copiada al portapapeles:\n' + example), ()=>alert('No se pudo copiar la URL automáticamente. Usa Ctrl/Cmd+C.'));
+    });
+
+    function escapeHtml(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  </script>
+</body>
+</html>

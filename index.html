@@ -3,51 +3,135 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Datos - proyectoimc</title>
+  <title>proyectoimc — público</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;line-height:1.4;margin:20px}
-    h1{margin-bottom:0.2em}
-    .actions{margin:12px 0}
-    table{border-collapse:collapse;width:100%;max-width:900px}
-    th,td{border:1px solid #ddd;padding:8px;text-align:left}
-    th{background:#f4f4f4}
-    .container{max-width:960px}
-    pre{background:#f7f7f7;padding:10px;overflow:auto}
-    button{padding:8px 12px;border-radius:6px;border:1px solid #bbb;background:#fff;cursor:pointer}
-    @media (max-width:600px){table,thead,tbody,tr,th,td{display:block}th{position:sticky;top:0}}
+    :root{
+      --bg:#f6f8fb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb;
+      --border:#e6e9ef; --success:#10b981;
+    }
+    html,body{height:100%}
+    body{
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      margin:0;background:linear-gradient(180deg,var(--bg),#fff);color:#111827;
+      -webkit-font-smoothing:antialiased;padding:28px;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{
+      width:56px;height:56px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#7c3aed);
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;
+      box-shadow:0 6px 18px rgba(37,99,235,0.12);
+    }
+    h1{font-size:20px;margin:0}
+    p.lead{margin:6px 0 18px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
+    @media (max-width:920px){.grid{grid-template-columns:1fr} .aside{order:2}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+    form .row{display:flex;gap:8px;margin-bottom:10px}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    input[type="text"], input[type="number"]{
+      width:100%;padding:9px 10px;border:1px solid #d6d9e0;border-radius:8px;font-size:14px;
+    }
+    button.btn{background:var(--accent);color:#fff;padding:9px 12px;border-radius:8px;border:0;cursor:pointer}
+    button.ghost{background:#fff;border:1px solid var(--border);color:#111;padding:7px 10px;border-radius:8px;cursor:pointer}
+    .actions{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid #eef0f4;text-align:left}
+    th{background:#fbfdff;color:var(--muted);font-weight:600;position:sticky;top:0}
+    tbody tr:hover{background:#fbfbfe}
+    .small{font-size:13px;color:var(--muted)}
+    .sql-preview{white-space:pre-wrap;background:#0b1220;color:#e6f0ff;padding:12px;border-radius:8px;overflow:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;font-size:12px}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .right-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    .danger{color:#dc2626;font-weight:600}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Listado público — proyectoimc</h1>
-    <p>Esta página muestra los datos importados desde el volcado SQL <code>rpd_academia.sql</code>. Puedes compartir la URL de GitHub Pages para que sea visible públicamente.</p>
+  <div class="wrap">
+    <header>
+      <div class="logo">IMC</div>
+      <div>
+        <h1>proyectoimc — visor público</h1>
+        <p class="lead">Añade usuarios, calcula su IMC y comparte la tabla. Los cambios se guardan en tu navegador y puedes descargar un .sql actualizado.</p>
+      </div>
+    </header>
 
-    <div class="actions">
-      <button id="downloadSql">Descargar rpd_academia.sql</button>
-      <button id="copyUrl">Copiar URL de ejemplo</button>
+    <div class="grid">
+      <main class="card">
+        <div class="actions">
+          <button id="downloadSql" class="btn">Descargar rpd_academia.sql</button>
+          <button id="copyUrl" class="ghost">Copiar URL de la página</button>
+        </div>
+
+        <div style="overflow:auto;max-height:420px;border-radius:8px">
+          <table id="peopleTable" aria-describedby="tabla">
+            <thead>
+              <tr>
+                <th style="width:56px">ID</th>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Peso (kg)</th>
+                <th>Altura (m)</th>
+                <th>IMC</th>
+                <th class="small">Acción</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="right-foot">
+          <div class="small">Registros totales: <span id="totalCount">0</span></div>
+          <div class="note">Los cambios que hagas se guardan en este navegador (localStorage).</div>
+        </div>
+      </main>
+
+      <aside class="aside">
+        <div class="card" style="margin-bottom:14px">
+          <h3 style="margin:0 0 8px 0">Agregar usuario</h3>
+          <form id="userForm">
+            <div class="row">
+              <div style="flex:1">
+                <label for="nombre">Nombre</label>
+                <input id="nombre" name="nombre" type="text" required placeholder="Ej: Ana" />
+              </div>
+              <div style="width:100px">
+                <label for="edad">Edad</label>
+                <input id="edad" name="edad" type="number" min="0" required placeholder="25" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div style="flex:1">
+                <label for="peso">Peso (kg)</label>
+                <input id="peso" name="peso" type="number" min="0" step="0.1" required placeholder="60.5" />
+              </div>
+              <div style="width:140px">
+                <label for="altura">Altura (m)</label>
+                <input id="altura" name="altura" type="number" min="0" step="0.01" required placeholder="1.72" />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" type="submit">Agregar</button>
+              <button id="resetStore" type="button" class="ghost">Borrar guardado</button>
+            </div>
+
+            <div class="note" style="margin-top:10px">El IMC se calcula como peso / (altura²) y queda con 4 decimales.</div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 8px 0">SQL (preview)</h3>
+          <div id="sqlPreview" class="sql-preview" aria-hidden="false"></div>
+        </div>
+      </aside>
     </div>
-
-    <table id="peopleTable" aria-describedby="tabla">
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>nombre</th>
-          <th>edad</th>
-          <th>peso</th>
-          <th>altura</th>
-          <th>imc</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>SQL (extracto del volcado)</h2>
-    <pre id="sqlPreview" aria-hidden="false"></pre>
   </div>
 
   <script>
-    // Datos extraídos del INSERT de tu archivo SQL
-    const people = [
+    // Datos iniciales (extraidos del volcado)
+    const initialPeople = [
       {id:7, nombre:"cristian", edad:19, peso:58, altura:1.7, imc:20.0692},
       {id:8, nombre:"Karenn", edad:18, peso:54, altura:1.52, imc:23.3726},
       {id:16, nombre:"luis", edad:19, peso:65, altura:1.6, imc:25.3906},
@@ -58,13 +142,78 @@
       {id:23, nombre:"sd", edad:34, peso:45, altura:1.78, imc:14.2028}
     ];
 
-    // Contenido completo del SQL (para descarga / ver)
-    const sqlContent = `-- phpMyAdmin SQL Dump
+    const STORAGE_KEY = 'proyectoimc_people_v1';
+
+    // Merge initial + stored
+    function loadPeople(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const stored = raw ? JSON.parse(raw) : [];
+        // stored items should have full object shape
+        // Ensure we don't duplicate initial entries by id: allow duplicates only if id different
+        const ids = new Set(initialPeople.map(p => p.id));
+        const combined = initialPeople.concat(stored.filter(p => !ids.has(p.id)));
+        return combined;
+      } catch(e){
+        console.error('Error reading storage', e);
+        return initialPeople.slice();
+      }
+    }
+
+    function saveStoredOnly(all){
+      // Keep only those with id > highest initial id (we treat initialPeople as canonical)
+      const maxInitialId = Math.max(...initialPeople.map(p => p.id));
+      const stored = all.filter(p => p.id > maxInitialId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    }
+
+    let people = loadPeople();
+
+    // Helpers
+    function round4(n){ return Math.round((n + Number.EPSILON)*10000)/10000; }
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function sqlEscape(s){ return String(s).replace(/'/g,"''"); }
+
+    // Render table
+    const tbody = document.querySelector('#peopleTable tbody');
+    const totalCount = document.getElementById('totalCount');
+    function renderTable(){
+      tbody.innerHTML = '';
+      people.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${p.id}</td>
+          <td>${escapeHtml(p.nombre)}</td>
+          <td>${p.edad}</td>
+          <td>${p.peso}</td>
+          <td>${p.altura}</td>
+          <td>${p.imc}</td>
+          <td class="small"><button data-id="${p.id}" class="delBtn ghost">Eliminar</button></td>`;
+        tbody.appendChild(tr);
+      });
+      totalCount.textContent = people.length;
+      attachDelete();
+      updateSqlPreview();
+    }
+
+    function attachDelete(){
+      const dels = document.querySelectorAll('.delBtn');
+      dels.forEach(btn => btn.addEventListener('click', e => {
+        const id = Number(btn.getAttribute('data-id'));
+        if(!confirm('Eliminar registro ID ' + id + '?')) return;
+        people = people.filter(x => x.id !== id);
+        saveStoredOnly(people);
+        renderTable();
+      }));
+    }
+
+    // SQL generation
+    function generateSqlDump(peeps){
+      const header = `-- phpMyAdmin SQL Dump
 -- version 4.5.1
 -- http://www.phpmyadmin.net
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-01-2026 a las 03:36:32
+-- Tiempo de generación: ${new Date().toLocaleString()}
 -- Versión del servidor: 10.1.9-MariaDB
 -- Versión de PHP: 5.6.15
 
@@ -78,73 +227,69 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: ` + "`proyectoimc`" + `
+-- Base de datos: \`proyectoimc\`
+--
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla ` + "`personas`" + `
+-- Estructura de tabla para la tabla \`personas\`
 --
 
-CREATE TABLE ` + "`personas`" + ` (
-  ` + "`id`" + ` int(11) NOT NULL,
-  ` + "`nombre`" + ` varchar(50) DEFAULT NULL,
-  ` + "`edad`" + ` int(11) DEFAULT NULL,
-  ` + "`peso`" + ` float DEFAULT NULL,
-  ` + "`altura`" + ` float DEFAULT NULL,
-  ` + "`imc`" + ` float DEFAULT NULL
+CREATE TABLE \`personas\` (
+  \`id\` int(11) NOT NULL,
+  \`nombre\` varchar(50) DEFAULT NULL,
+  \`edad\` int(11) DEFAULT NULL,
+  \`peso\` float DEFAULT NULL,
+  \`altura\` float DEFAULT NULL,
+  \`imc\` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Volcado de datos para la tabla ` + "`personas`" + `
+-- Volcado de datos para la tabla \`personas\`
 --
 
-INSERT INTO ` + "`personas`" + ` (` + "`id`, `nombre`, `edad`, `peso`, `altura`, `imc`" + `) VALUES
-(7, 'cristian', 19, 58, 1.7, 20.0692),
-(8, 'Karenn', 18, 54, 1.52, 23.3726),
-(16, 'luis', 19, 65, 1.6, 25.3906),
-(19, 'bnm', 45, 32, 1.57, 12.9823),
-(20, 'youuu', 24, 34, 1.65, 12.4885),
-(21, 'qwert', 45, 34, 1.87, 9.7229),
-(22, 'sd', 34, 45, 1.78, 14.2028),
-(23, 'sd', 34, 45, 1.78, 14.2028);
-
---
+INSERT INTO \`personas\` (\`id\`, \`nombre\`, \`edad\`, \`peso\`, \`altura\`, \`imc\`) VALUES
+`;
+      const rows = peeps.map(p => {
+        const n = sqlEscape(p.nombre);
+        return `(${p.id}, '${n}', ${p.edad}, ${p.peso}, ${p.altura}, ${p.imc})`;
+      }).join(',\n') + ';\n\n';
+      const footer = `--
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla ` + "`personas`" + `
+-- Indices de la tabla \`personas\`
 --
-ALTER TABLE ` + "`personas`" + `
-  ADD PRIMARY KEY (` + "`id`" + `);
+ALTER TABLE \`personas\`
+  ADD PRIMARY KEY (\`id\`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT de la tabla ` + "`personas`" + `
+-- AUTO_INCREMENT de la tabla \`personas\`
 --
-ALTER TABLE ` + "`personas`" + `
-  MODIFY ` + "`id`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+ALTER TABLE \`personas\`
+  MODIFY \`id\` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=${Math.max( (peeps.length ? Math.max(...peeps.map(p=>p.id)) + 1 : 1), 24 )};
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;`;
+      return header + rows + footer;
+    }
 
-    // Rellenar tabla HTML
-    const tbody = document.querySelector('#peopleTable tbody');
-    people.forEach(p => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${p.id}</td><td>${escapeHtml(p.nombre)}</td><td>${p.edad}</td><td>${p.peso}</td><td>${p.altura}</td><td>${p.imc}</td>`;
-      tbody.appendChild(tr);
-    });
+    // Update sql preview and current sqlContent
+    let currentSql = generateSqlDump(people);
+    function updateSqlPreview(){
+      currentSql = generateSqlDump(people);
+      document.getElementById('sqlPreview').textContent = currentSql;
+    }
 
-    // Mostrar SQL en la página
-    document.getElementById('sqlPreview').textContent = sqlContent;
-
-    document.getElementById('downloadSql').addEventListener('click', () => {
-      const blob = new Blob([sqlContent], {type: 'text/sql;charset=utf-8'});
+    // Download handler
+    document.getElementById('downloadSql').addEventListener('click', ()=> {
+      const blob = new Blob([currentSql], {type: 'text/sql;charset=utf-8'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -155,14 +300,42 @@ ALTER TABLE ` + "`personas`" + `
       URL.revokeObjectURL(url);
     });
 
+    // Copy URL
     document.getElementById('copyUrl').addEventListener('click', () => {
-      const example = window.location.origin + '/' + (window.location.pathname.split('/')[1] || '') ;
-      navigator.clipboard?.writeText(example).then(()=>alert('URL copiada al portapapeles:\n' + example), ()=>alert('No se pudo copiar la URL automáticamente. Usa Ctrl/Cmd+C.'));
+      const example = window.location.href;
+      navigator.clipboard?.writeText(example).then(()=>alert('URL copiada al portapapeles:\n' + example), ()=>prompt('Copia la URL manualmente:', example));
     });
 
-    function escapeHtml(s){
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
+    // Form submit
+    document.getElementById('userForm').addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const edad = Number(document.getElementById('edad').value);
+      const peso = Number(document.getElementById('peso').value);
+      const altura = Number(document.getElementById('altura').value);
+      if(!nombre || !edad || !peso || !altura){ alert('Completa todos los campos correctamente.'); return; }
+      const imc = round4(peso / (altura * altura));
+      // new ID: max existing ID + 1
+      const newId = (people.length ? Math.max(...people.map(p=>p.id)) : 0) + 1;
+      const newP = {id:newId, nombre, edad, peso, altura, imc};
+      people.push(newP);
+      saveStoredOnly(people);
+      renderTable();
+      // reset form
+      ev.target.reset();
+      document.getElementById('nombre').focus();
+    });
+
+    // Reset stored data
+    document.getElementById('resetStore').addEventListener('click', ()=>{
+      if(!confirm('Borrar los datos guardados en este navegador (no elimina los registros iniciales)?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      people = loadPeople();
+      renderTable();
+    });
+
+    // Initial render
+    renderTable();
   </script>
 </body>
 </html>
